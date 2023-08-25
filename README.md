@@ -23,6 +23,20 @@ _✨ 通过pyzbar解析二维码 ✨_
 
 
 
+## 依赖
+
+根据pyzbar官方文档，zbar DLLs 已经包含在 Windows Python 轮子中。
+
+在其他操作系统上，您需要安装 zbar 共享库。
+
+Mac OS X:
+
+    brew install zbar
+
+Linux:
+
+    sudo apt-get install libzbar0
+
 ## 💿 安装
 
 <details open>
