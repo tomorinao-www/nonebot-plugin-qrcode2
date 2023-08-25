@@ -98,7 +98,10 @@ async def main(bot: Bot, event: Event, state: T_State):
     message_list: list[Message] = [res_start_msg]
     for item in decodeds:
         img_bytes = BytesIO()
-        item_img = base_img.crop(item.rect)
+        rect: pyzbar.Rect = item.rect
+        # (left, upper, right, lower)
+        box = (rect.left, rect.top, rect.left + rect.width, rect.top + rect.height)
+        item_img = base_img.crop(box)
         item_img.save(img_bytes, format="JPEG")
         msg_txt = Message(str(item.data.decode("utf-8")))
         message = msg_txt + MessageSegment.image(img_bytes.getvalue())
