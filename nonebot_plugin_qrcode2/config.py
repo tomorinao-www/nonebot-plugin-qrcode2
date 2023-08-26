@@ -9,5 +9,5 @@ class Config(BaseConfig):
     # 响应优先级
     qrcode_priority: int = 10
     # bot昵称列表
-    nickname: list[str] = ["nao"]
+    nickname: list[str] = ["qrcode2"]
 
