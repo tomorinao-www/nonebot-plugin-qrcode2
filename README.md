@@ -89,7 +89,7 @@ Linux:
 
 | 配置项                 | 必填 | 默认值                 | 说明 |
 |:----------------------:|:---:|:----------------------:|:----:|
-| animetrace_cmd         | 否 | "#"                     | 命令符 |
-| animetrace_keyword     | 否 | ["扫码"] | 命令关键字 |
-| animetrace_priority    | 否 | 10                      | 响应优先级 |
-| nickname               | 否 | ["anime trace"]         | bot昵称列表，只取nickname[0] |
+| qrcode_cmd         | 否 | "#"                     | 命令符 |
+| qrcode_keyword     | 否 | ["扫码"] | 命令关键字 |
+| qrcode_priority    | 否 | 10                      | 响应优先级 |
+| nickname               | 否 | ["nao"]         | bot昵称列表，只取nickname[0] |
