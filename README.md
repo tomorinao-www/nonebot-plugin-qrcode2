@@ -8,7 +8,7 @@
 
 # nonebot-plugin-qrcode2
 
-_✨ 通过pyzbar解析二维码 ✨_
+_✨ 解析二维码 ✨_
 
 
 <a href="./LICENSE">
@@ -22,6 +22,10 @@ _✨ 通过pyzbar解析二维码 ✨_
 </div>
 
 
+
+## 日志
+
+新增通过opencv下腾讯的二维码识别模型识别。 2023/09/11
 
 ## 依赖
 

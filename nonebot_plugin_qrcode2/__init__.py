@@ -2,12 +2,10 @@ from io import BytesIO
 
 from httpx import AsyncClient
 from PIL import Image
-from pyzbar import pyzbar
 
 from nonebot import logger, on_keyword, get_driver
 from nonebot.adapters.onebot.v11 import (
     Bot,
-    Event,
     Message,
     MessageSegment,
     PrivateMessageEvent,
@@ -21,11 +19,14 @@ from nonebot.exception import ActionFailed
 from nonebot.internal.matcher import Matcher
 from nonebot.typing import T_State
 from nonebot.plugin import PluginMetadata
+
+from . import decode
 from .config import Config
+from .exception import QRDecodeError
 
 __plugin_meta__ = PluginMetadata(
     name="二维码",
-    description="通过pyzbar解析二维码",
+    description="解析二维码",
     usage="""命令: {#} {扫码}
 示例: #扫码
 大括号内{}为必要关键字
@@ -55,7 +56,7 @@ qr = on_keyword(
 
 
 @qr.handle()
-async def _(bot: Bot, event: MessageEvent, matcher: Matcher, state: T_State):
+async def _(event: MessageEvent, matcher: Matcher):
     # 获取图片链接
     message = event.reply.message if event.reply else event.message
     if imgs := message["image"]:
@@ -71,7 +72,7 @@ async def get_image(state: T_State, imgs: Message = Arg()):
 
 
 @qr.handle()
-async def main(bot: Bot, event: Event, state: T_State):
+async def main(bot: Bot, event: MessageEvent, state: T_State):
     # 拿到图片
     img_urls = state["img_urls"]
     async with AsyncClient(trust_env=False) as client:
@@ -81,29 +82,23 @@ async def main(bot: Bot, event: Event, state: T_State):
         base_img = Image.open(BytesIO(res.content)).convert("RGB")
 
     # 识别二维码
-    decodeds: list[pyzbar.Decoded] = None
     try:
-        decodeds = pyzbar.decode(base_img, symbols=[pyzbar.ZBarSymbol.QRCODE])
+        decoded_list, decode_name = decode.all_decode(base_img)
+    except QRDecodeError:
+        await qr.finish(f"图中没有二维码")
     except Exception as e:
         logger.error(repr(e))
         await qr.finish(f"扫码失败{repr(e)}")
-
-    # 检查识别结果
-    if not decodeds:
-        await qr.finish(f"图中没有二维码")
-
+    
     # 构造消息
-    qr_num = len(decodeds)
-    res_start_msg = Message(f"共识别到{qr_num}个二维码")
+    qr_num = len(decoded_list)
+    res_start_msg = Message(f"共识别到{qr_num}个二维码\nby {decode_name}")
     message_list: list[Message] = [res_start_msg]
-    for item in decodeds:
+    for txt, box in decoded_list:
         img_bytes = BytesIO()
-        rect: pyzbar.Rect = item.rect
-        # (left, upper, right, lower)
-        box = (rect.left, rect.top, rect.left + rect.width, rect.top + rect.height)
         item_img = base_img.crop(box)
         item_img.save(img_bytes, format="JPEG")
-        msg_txt = Message(str(item.data.decode("utf-8")))
+        msg_txt = Message(txt)
         message = msg_txt + MessageSegment.image(img_bytes.getvalue())
         message_list.append(message)
 
