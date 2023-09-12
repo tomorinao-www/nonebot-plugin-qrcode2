@@ -97,3 +97,10 @@ Linux:
 | qrcode_keyword     | 否 | ["扫码"] | 命令关键字 |
 | qrcode_priority    | 否 | 10                      | 响应优先级 |
 | nickname               | 否 | ["qrcode2"]         | bot昵称列表，只取nickname[0] |
+
+## 感谢
+
+使用的二维码解析库（按调用顺序排序）
+
+- opencv-contrib-python 腾讯的wechat_qrcode_WeChatQRCode
+- pyzbar
