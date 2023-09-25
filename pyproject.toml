@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nonebot-plugin-qrcode2"
-version = "0.2.0"
+version = "0.2.1"
 description = "解析二维码"
 authors = ["友利奈绪-勿忘我 <1520872279@qq.com>"]
 license = "MIT"
