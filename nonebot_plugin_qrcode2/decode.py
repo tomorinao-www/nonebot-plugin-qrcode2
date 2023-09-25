@@ -15,7 +15,7 @@ wechat_model_path = os.path.join(os.path.dirname(__file__), "resource/wechat_mod
 wechat_args = [os.path.join(wechat_model_path, f) for f in wechat_args]
 
 
-def wechat_decode(img: Image) -> list[QRDecoded] | None:
+def wechat_decode(img: Image.Image) -> list[QRDecoded] | None:
     img_nparray = nparray(img)
     detector = wechat_qrcode_WeChatQRCode(*wechat_args)
     datas, points = detector.detectAndDecode(img_nparray)
@@ -30,7 +30,7 @@ def wechat_decode(img: Image) -> list[QRDecoded] | None:
     return list(zip(datas, boxs))
 
 
-def pyzbar_decode(img: Image) -> list[QRDecoded] | None:
+def pyzbar_decode(img: Image.Image) -> list[QRDecoded] | None:
     decoded_list: list[pyzbar.Decoded] = None
     try:
         decoded_list = pyzbar.decode(img, symbols=[pyzbar.ZBarSymbol.QRCODE])
