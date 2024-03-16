@@ -3,7 +3,7 @@ from io import BytesIO
 from httpx import AsyncClient
 from PIL import Image
 
-from nonebot import logger, on_keyword, get_driver
+from nonebot import logger, on_keyword, get_plugin_config
 from nonebot.adapters.onebot.v11 import (
     Bot,
     Message,
@@ -38,7 +38,7 @@ __plugin_meta__ = PluginMetadata(
     supported_adapters={"~onebot.v11"},
 )
 
-config: Config = Config.parse_obj(get_driver().config)
+config = get_plugin_config(Config)
 
 
 async def _cmd_check(bot: Bot, event: MessageEvent):
