@@ -26,7 +26,7 @@ from .exception import QRDecodeError
 
 __plugin_meta__ = PluginMetadata(
     name="二维码",
-    description="解析二维码",
+    description="本地解析二维码",
     usage="""命令: {#} {扫码}
 示例: #扫码
 大括号内{}为必要关键字
@@ -43,8 +43,7 @@ config = get_plugin_config(Config)
 
 async def _cmd_check(bot: Bot, event: MessageEvent):
     txt_msg = event.message.extract_plain_text().strip()
-    if config.qrcode_cmd in txt_msg:
-        return True
+    return config.qrcode_cmd in txt_msg
 
 
 qr = on_keyword(
@@ -85,11 +84,11 @@ async def main(bot: Bot, event: MessageEvent, state: T_State):
     try:
         decoded_list, decode_name = decode.all_decode(base_img)
     except QRDecodeError:
-        await qr.finish(f"图中没有二维码")
+        await qr.finish("图中没有二维码")
     except Exception as e:
         logger.error(repr(e))
         await qr.finish(f"扫码失败{repr(e)}")
-    
+
     # 构造消息
     qr_num = len(decoded_list)
     res_start_msg = Message(f"共识别到{qr_num}个二维码\nby {decode_name}")
@@ -108,22 +107,9 @@ async def main(bot: Bot, event: MessageEvent, state: T_State):
     # 若识别出2个及以上二维码，发送合并转发消息
     nickname = config.nickname[0] if config.nickname else "qrcode2"
     try:
-        msgs = [
-            {
-                "type": "node",
-                "data": {
-                    "name": nickname,
-                    "uin": bot.self_id,
-                    "content": msg,
-                },
-            }
-            for msg in message_list
-        ]
         # 发送转发消息
-        await bot.send_forward_msg(
-            user_id=event.user_id if isinstance(event, PrivateMessageEvent) else 0,
-            group_id=event.group_id if isinstance(event, GroupMessageEvent) else 0,
-            messages=msgs,
+        await send_forward(
+            bot=bot, event=event, message_list=message_list, nickname=nickname
         )
     except ActionFailed as e:
         logger.warning(e)
@@ -131,3 +117,42 @@ async def main(bot: Bot, event: MessageEvent, state: T_State):
             message=Message("消息被风控了~合并消息发送失败"),
             at_sender=True,
         )
+
+
+async def send_forward(
+    bot: Bot,
+    event: MessageEvent,
+    message_list: list[Message],
+    nickname: str,
+):
+    """
+    send_group_forward_msg |
+    send_private_forward_msg |
+    send_forward_msg
+    """
+    msgs = [
+        MessageSegment(
+            type="node",
+            data={
+                "name": nickname,
+                "uin": bot.self_id,
+                "content": Message(msg),
+            },
+        )
+        for msg in message_list
+    ]
+    # 发送转发消息
+    data = {}
+    data["messages"] = msgs
+    if isinstance(event, GroupMessageEvent):
+        t = "group"
+        data["group_id"] = event.group_id
+    elif isinstance(event, PrivateMessageEvent):
+        t = "private"
+        data["user_id"] = event.user_id
+    api = f"send_{t}_forward_msg"
+    try:
+        await bot.call_api(api=api, **data)
+    except Exception as e:
+        logger.info(f"api: {api}调用失败{e}", e)
+        await bot.send_forward_msg(**data)
