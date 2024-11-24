@@ -1,1 +1,2 @@
-poetry publish --build
+call clash.bat
+call poetry publish --build
